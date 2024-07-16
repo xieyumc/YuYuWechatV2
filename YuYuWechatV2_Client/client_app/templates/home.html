@@ -28,17 +28,24 @@
             padding: 10px;
             text-align: center;
         }
-        .message {
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        .message .username {
-            font-weight: bold;
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
         }
         .status-message {
-        transition: opacity 0.5s ease;  /* 平滑过渡效果 */
-    }
+            transition: opacity 0.5s ease;  /* 平滑过渡效果 */
+        }
     </style>
 </head>
 <body>
@@ -57,60 +64,74 @@
                 <button type="button" onclick="connectServer()">Connect to Server</button>
             </form>
         </div>
-        <div id="messageContainer">
-                    {% for message in messages %}
-                        <div class="message">
-                            <p class="username">{{ message.username }}</p>
-                            <p class="text">{{ message.text }}</p>
-                            <form method="post" onsubmit="return sendMessage(this);">
-                                {% csrf_token %}
-                                <input type="hidden" name="username" value="{{ message.username }}">
-                                <input type="hidden" name="text" value="{{ message.text }}">
-                                <input type="hidden" id="server_ip_hidden" name="server_ip">
-                                <button type="submit">Send</button>
-                                <span class="status-message" style="display:none;"></span> <!-- 新增状态信息显示 -->
-                            </form>
-                        </div>
-                    {% endfor %}
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>发送消息</th>
+                    <th>操作</th>
+                    <th>发送状态</th>
+                </tr>
+            </thead>
+            <tbody id="messageContainer">
+                {% for message in messages %}
+                <tr>
+                    <td>{{ message.username }}</td>
+                    <td>{{ message.text }}</td>
+                    <td>
+                        <form method="post" onsubmit="return sendMessage(this);">
+                            {% csrf_token %}
+                            <input type="hidden" name="username" value="{{ message.username }}">
+                            <input type="hidden" name="text" value="{{ message.text }}">
+                            <input type="hidden" id="server_ip_hidden" name="server_ip">
+                            <button type="submit">Send</button>
+                        </form>
+                    </td>
+                    <td>
+                        <span class="status-message" style="display:none;"></span> <!-- 新增状态信息显示 -->
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <script>
- function connectServer() {
-        var serverIp = document.getElementById('server_ip').value;
-        document.getElementById('server_ip_hidden').value = serverIp;
-        alert('Server connected: ' + serverIp);
-    }
+        function connectServer() {
+            var serverIp = document.getElementById('server_ip').value;
+            document.getElementById('server_ip_hidden').value = serverIp;
+            alert('Server connected: ' + serverIp);
+        }
 
-    function sendMessage(form) {
-        var statusMessage = form.querySelector('.status-message');
-        statusMessage.style.display = 'block';
-        statusMessage.textContent = '正在发送...';
-        statusMessage.style.opacity = 0;
-        setTimeout(() => statusMessage.style.opacity = 1, 100);
+        function sendMessage(form) {
+            var statusMessage = form.parentNode.nextElementSibling.querySelector('.status-message');
+            statusMessage.style.display = 'block';
+            statusMessage.textContent = '正在发送...';
+            statusMessage.style.opacity = 0;
+            setTimeout(() => statusMessage.style.opacity = 1, 100);
 
-        var formData = new FormData(form);
-        formData.append('server_ip', document.getElementById('server_ip_hidden').value);
+            var formData = new FormData(form);
+            formData.append('server_ip', document.getElementById('server_ip_hidden').value);
 
-        fetch('{% url "send_message" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            }
-        }).then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Network response was not ok.');
-            }
-        }).then(data => {
-            statusMessage.textContent = '发送成功';
-        }).catch(error => {
-            statusMessage.textContent = '发送失败';
-            console.error('Error:', error);
-        });
-        return false;
-    }
+            fetch('{% url "send_message" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            }).then(data => {
+                statusMessage.textContent = '发送成功';
+            }).catch(error => {
+                statusMessage.textContent = '发送失败';
+                console.error('Error:', error);
+            });
+            return false;
+        }
     </script>
 </body>
 </html>
