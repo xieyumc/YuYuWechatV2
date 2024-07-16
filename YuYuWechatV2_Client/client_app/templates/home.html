@@ -12,126 +12,173 @@
             display: flex;
             height: 100vh;
         }
+
         .sidebar {
             width: 200px;
             background-color: #f8f9fa;
             padding: 20px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
+
         .content {
             flex: 1;
             padding: 20px;
         }
+
         .topbar {
             background-color: #007aff;
             color: white;
             padding: 10px;
             text-align: center;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+
         table, th, td {
             border: 1px solid #ddd;
         }
+
         th, td {
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .status-message {
-            transition: opacity 0.5s ease;  /* 平滑过渡效果 */
+            transition: opacity 0.5s ease; /* 平滑过渡效果 */
         }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <h2>Menu</h2>
-        <ul>
-            <li><a href="{% url 'home' %}">Home</a></li>
-        </ul>
+<div class="sidebar">
+    <h2>Menu</h2>
+    <ul>
+        <li><a href="{% url 'home' %}">Home</a></li>
+    </ul>
+</div>
+<div class="content">
+    <div class="topbar">
+        <h1>WeChat Client</h1>
+        <form id="connectForm" method="post" action="">
+            {% csrf_token %}
+            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
+            <span id="pingStatus"
+                  style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block;"></span>
+            <button type="button" onclick="connectServer()">Connect to Server</button>
+        </form>
     </div>
-    <div class="content">
-        <div class="topbar">
-            <h1>WeChat Client</h1>
-            <form id="connectForm" method="post" action="">
-                {% csrf_token %}
-                <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
-                <button type="button" onclick="connectServer()">Connect to Server</button>
-            </form>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>用户名</th>
-                    <th>发送消息</th>
-                    <th>操作</th>
-                    <th>发送状态</th>
-                </tr>
-            </thead>
-            <tbody id="messageContainer">
-                {% for message in messages %}
-                <tr>
-                    <td>{{ message.username }}</td>
-                    <td>{{ message.text }}</td>
-                    <td>
-                        <form method="post" onsubmit="return sendMessage(this);">
-                            {% csrf_token %}
-                            <input type="hidden" name="username" value="{{ message.username }}">
-                            <input type="hidden" name="text" value="{{ message.text }}">
-                            <input type="hidden" id="server_ip_hidden" name="server_ip">
-                            <button type="submit">Send</button>
-                        </form>
-                    </td>
-                    <td>
-                        <span class="status-message" style="display:none;"></span> <!-- 新增状态信息显示 -->
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <script>
-        function connectServer() {
-            var serverIp = document.getElementById('server_ip').value;
-            document.getElementById('server_ip_hidden').value = serverIp;
-            alert('Server connected: ' + serverIp);
-        }
+    <table>
+        <thead>
+        <tr>
+            <th>用户名</th>
+            <th>发送消息</th>
+            <th>操作</th>
+            <th>发送状态</th>
+        </tr>
+        </thead>
+        <tbody id="messageContainer">
+        {% for message in messages %}
+        <tr>
+            <td>{{ message.username }}</td>
+            <td>{{ message.text }}</td>
+            <td>
+                <form method="post" onsubmit="return sendMessage(this);">
+                    {% csrf_token %}
+                    <input type="hidden" name="username" value="{{ message.username }}">
+                    <input type="hidden" name="text" value="{{ message.text }}">
+                    <input type="hidden" id="server_ip_hidden" name="server_ip">
+                    <button type="submit">Send</button>
+                </form>
+            </td>
+            <td>
+                <span class="status-message" style="display:none;"></span> <!-- 新增状态信息显示 -->
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+    function connectServer() {
+        var serverIp = document.getElementById('server_ip').value;
+        var pingUrl = `http://${serverIp}/wechat/ping/`; // 构建完整的 URL
+        var pingIndicator = document.getElementById('pingStatus');
 
-        function sendMessage(form) {
-            var statusMessage = form.parentNode.nextElementSibling.querySelector('.status-message');
-            statusMessage.style.display = 'block';
-            statusMessage.textContent = '正在发送...';
-            statusMessage.style.opacity = 0;
-            setTimeout(() => statusMessage.style.opacity = 1, 100);
+        // 显示正在检测的状态
+        pingIndicator.style.backgroundColor = 'orange';
 
-            var formData = new FormData(form);
-            formData.append('server_ip', document.getElementById('server_ip_hidden').value);
+        // 设置超时时间
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('Ping Timeout: Server did not respond in 3 seconds.'));
+            }, 3000); // 3秒后触发超时
+        });
 
-            fetch('{% url "send_message" %}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                }
-            }).then(response => {
+        // 发送GET请求检测服务器，与超时promise竞赛
+        const fetchPromise = fetch(pingUrl)
+            .then(response => {
                 if (response.ok) {
                     return response.json();
                 } else {
-                    throw new Error('Network response was not ok.');
+                    throw new Error('Server response was not ok.');
                 }
-            }).then(data => {
-                statusMessage.textContent = '发送成功';
-            }).catch(error => {
-                statusMessage.textContent = '发送失败';
+            })
+            .then(data => {
+                if (data.status === "pong") {
+                    pingIndicator.style.backgroundColor = 'green';
+                    alert('Server connected: ' + serverIp);
+                    document.getElementById('server_ip_hidden').value = serverIp;
+                } else {
+                    throw new Error('Server did not respond correctly.');
+                }
+            });
+
+        Promise.race([fetchPromise, timeoutPromise])
+            .catch(error => {
+                // 捕获网络、超时或其他错误
+                pingIndicator.style.backgroundColor = 'red';
+                alert(error.message);
                 console.error('Error:', error);
             });
-            return false;
-        }
-    </script>
+    }
+
+    function sendMessage(form) {
+        var statusMessage = form.parentNode.nextElementSibling.querySelector('.status-message');
+        statusMessage.style.display = 'block';
+        statusMessage.textContent = '正在发送...';
+        statusMessage.style.opacity = 0;
+        setTimeout(() => statusMessage.style.opacity = 1, 100);
+
+        var formData = new FormData(form);
+        formData.append('server_ip', document.getElementById('server_ip_hidden').value);
+
+        fetch('{% url "send_message" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            }
+        }).then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Network response was not ok.');
+            }
+        }).then(data => {
+            statusMessage.textContent = '发送成功';
+        }).catch(error => {
+            statusMessage.textContent = '发送失败';
+            console.error('Error:', error);
+        });
+        return false;
+    }
+</script>
 </body>
 </html>
