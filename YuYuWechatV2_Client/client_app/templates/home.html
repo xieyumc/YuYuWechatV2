@@ -68,9 +68,9 @@
         <h1>WeChat Client</h1>
         <form id="connectForm" method="post" action="">
             {% csrf_token %}
-            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
             <span id="pingStatus"
-                  style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block;"></span>
+                  style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 5px;"></span>
+            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
             <button type="button" onclick="connectServer()">Connect to Server</button>
         </form>
     </div>
