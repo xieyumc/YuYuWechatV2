@@ -3,11 +3,13 @@ from django.http import JsonResponse, HttpResponse
 from .models import Message
 import json
 import requests
-
+from django.views.decorators.csrf import csrf_exempt
 def home(request):
     messages = Message.objects.all()
     return render(request, 'home.html', {'messages': messages})
 
+
+@csrf_exempt
 def send_message(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -23,5 +25,6 @@ def send_message(request):
             headers={'Content-Type': 'application/json'},
             data=json.dumps(data)
         )
-        return HttpResponse(f"Message sent to {username}: {response.json()}")
-    return HttpResponse("Invalid request method", status=405)
+        # 使用JsonResponse返回状态信息
+        return JsonResponse({'status': f"Message sent to {username}"})
+    return JsonResponse({'status': "Invalid request method"}, status=405)

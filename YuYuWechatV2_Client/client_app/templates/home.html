@@ -55,19 +55,20 @@
             </form>
         </div>
         <div id="messageContainer">
-            {% for message in messages %}
-                <div class="message">
-                    <p class="username">{{ message.username }}</p>
-                    <p class="text">{{ message.text }}</p>
-                    <form method="post" action="{% url 'send_message' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="username" value="{{ message.username }}">
-                        <input type="hidden" name="text" value="{{ message.text }}">
-                        <input type="hidden" id="server_ip_hidden" name="server_ip">
-                        <button type="submit">Send</button>
-                    </form>
-                </div>
-            {% endfor %}
+                    {% for message in messages %}
+                        <div class="message">
+                            <p class="username">{{ message.username }}</p>
+                            <p class="text">{{ message.text }}</p>
+                            <form method="post" onsubmit="return sendMessage(this);">
+                                {% csrf_token %}
+                                <input type="hidden" name="username" value="{{ message.username }}">
+                                <input type="hidden" name="text" value="{{ message.text }}">
+                                <input type="hidden" id="server_ip_hidden" name="server_ip">
+                                <button type="submit">Send</button>
+                                <span class="status-message" style="display:none;"></span> <!-- 新增状态信息显示 -->
+                            </form>
+                        </div>
+                    {% endfor %}
         </div>
     </div>
     <script>
@@ -76,6 +77,24 @@
             document.getElementById('server_ip_hidden').value = serverIp;
             alert('Server connected: ' + serverIp);
         }
+
+        function sendMessage(form) {
+        var formData = new FormData(form);
+        formData.append('server_ip', document.getElementById('server_ip_hidden').value);
+        fetch('{% url "send_message" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')  // 从表单中获取CSRF token
+            }
+        }).then(response => response.json())
+        .then(data => {
+            var message = form.querySelector('.status-message');
+            message.textContent = data.status;  // 更新状态信息显示
+            message.style.display = 'block';    // 确保消息可见
+        }).catch(error => console.error('Error:', error));
+        return false;  // 阻止表单的默认提交行为
+    }
     </script>
 </body>
 </html>
