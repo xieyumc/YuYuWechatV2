@@ -1,9 +1,19 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from .models import Message, WechatUser
+from .models import Message, WechatUser, ServerConfig
 import json
 import requests
 from django.views.decorators.csrf import csrf_exempt
+
+def get_server_ip():
+    try:
+        return ServerConfig.objects.latest('id').server_ip
+    except ServerConfig.DoesNotExist:
+        return None  # 或者返回一个默认的IP地址
+
+def set_server_ip(ip_address):
+    ServerConfig.objects.create(server_ip=ip_address)
+    return True
 
 def home(request):
     messages = Message.objects.all()
@@ -14,7 +24,10 @@ def send_message(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         text = request.POST.get('text')
-        server_ip = request.POST.get('server_ip')
+        server_ip = get_server_ip()  # 更新获取IP的方式
+
+        if not server_ip:
+            return JsonResponse({'status': "Server IP not set"}, status=400)
 
         try:
             user = WechatUser.objects.get(username=username)
