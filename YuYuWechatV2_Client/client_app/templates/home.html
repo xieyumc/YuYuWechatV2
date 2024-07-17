@@ -72,22 +72,24 @@
 </head>
 <body>
 <div class="sidebar">
+        <form id="connectForm" method="post" action="">
+        {% csrf_token %}
+        <span id="pingStatus"
+              style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 5px;"></span>
+        <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
+        <button type="button" onclick="connectServer()">Ping Server</button>
+        <button type="button" onclick="updateServerIP()">Set as Server IP</button>
+    </form>
     <h2>Menu</h2>
     <ul>
         <li><a href="{% url 'home' %}">Home</a></li>
     </ul>
+
 </div>
 <div class="content">
     <div class="topbar">
         <h1>YuYuWeChat Client</h1>
-        <form id="connectForm" method="post" action="">
-            {% csrf_token %}
-            <span id="pingStatus"
-                  style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 5px;"></span>
-            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
-            <button type="button" onclick="connectServer()">Ping Server</button>
-            <button type="button" onclick="updateServerIP()">Set as Server IP</button>
-        </form>
+
     </div>
     <div>
         <label for="groupFilter">选择分组:</label>
