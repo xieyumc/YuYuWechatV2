@@ -5,19 +5,34 @@ import json
 import requests
 from django.views.decorators.csrf import csrf_exempt
 
+
 def get_server_ip():
     try:
         return ServerConfig.objects.latest('id').server_ip
     except ServerConfig.DoesNotExist:
         return None  # 或者返回一个默认的IP地址
 
-def set_server_ip(ip_address):
-    ServerConfig.objects.create(server_ip=ip_address)
-    return True
+
+@csrf_exempt
+def set_server_ip(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        server_ip = data.get('server_ip')
+        if server_ip:
+            # 删除现有的所有IP记录
+            ServerConfig.objects.all().delete()
+            # 添加新的IP记录
+            ServerConfig.objects.create(server_ip=server_ip)
+            return JsonResponse({'status': f"Server IP set to {server_ip}"})
+        else:
+            return JsonResponse({'status': "No IP address provided"}, status=400)
+    return JsonResponse({'status': "Invalid request method"}, status=405)
+
 
 def home(request):
     messages = Message.objects.all()
     return render(request, 'home.html', {'messages': messages})
+
 
 @csrf_exempt
 def send_message(request):
