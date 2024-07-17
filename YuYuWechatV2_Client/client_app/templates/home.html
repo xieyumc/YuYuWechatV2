@@ -94,10 +94,14 @@
         <select id="groupFilter" onchange="filterMessages()">
             <option value="all">所有分组</option>
             {% for group in groups %}
-            <option value="{{ group }}">{{ group }}</option>
+                <option value="{{ group }}">{{ group }}</option>
             {% endfor %}
         </select>
         <button type="button" onclick="sendGroupMessage()">一键发送</button> <!-- 新增一键发送按钮 -->
+    </div>
+    <div id="progressContainer" style="display: none;">
+        <progress id="progressBar" value="0" max="100"></progress>
+        <p id="progressText">正在发送消息...</p>
     </div>
     <table>
         <thead>
@@ -111,23 +115,23 @@
         </thead>
         <tbody id="messageContainer">
         {% for message in messages %}
-        <tr data-group="{{ message.group }}">
-            <td>{{ message.user.username }}</td>
-            <td>{{ message.text }}</td>
-            <td>{{ message.group }}</td>
-            <td>
-                <form method="post" onsubmit="return sendMessage(this);">
-                    {% csrf_token %}
-                    <input type="hidden" name="username" value="{{ message.user.username }}">
-                    <input type="hidden" name="text" value="{{ message.text }}">
-                    <input type="hidden" id="server_ip_hidden" name="server_ip">
-                    <button type="submit">Send</button>
-                </form>
-            </td>
-            <td>
-                <span class="status-message" style="display:none;"></span>
-            </td>
-        </tr>
+            <tr data-group="{{ message.group }}">
+                <td>{{ message.user.username }}</td>
+                <td>{{ message.text }}</td>
+                <td>{{ message.group }}</td>
+                <td>
+                    <form method="post" onsubmit="return sendMessage(this);">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="{{ message.user.username }}">
+                        <input type="hidden" name="text" value="{{ message.text }}">
+                        <input type="hidden" id="server_ip_hidden" name="server_ip">
+                        <button type="submit">Send</button>
+                    </form>
+                </td>
+                <td>
+                    <span class="status-message" style="display:none;"></span>
+                </td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
@@ -238,6 +242,20 @@
         var rows = document.querySelectorAll(`#messageContainer tr[data-group='${selectedGroup}']`);
         var serverIp = document.getElementById('server_ip_hidden').value;
         var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        var totalMessages = rows.length;
+        var sentCount = 0;
+        var successCount = 0;
+        var failureCount = 0;
+        var failedUsers = [];
+
+        if (totalMessages === 0) {
+            alert('当前分组没有用户');
+            return;
+        }
+
+        document.getElementById('progressContainer').style.display = 'block';
+        var progressBar = document.getElementById('progressBar');
+        var progressText = document.getElementById('progressText');
 
         rows.forEach(row => {
             var form = row.querySelector('form');
@@ -252,19 +270,30 @@
                 }
             }).then(response => {
                 if (response.ok) {
+                    successCount++;
                     return response.json();
                 } else {
                     throw new Error('Network response was not ok.');
                 }
-            }).then(data => {
-                // 这里可以添加消息发送成功后的处理逻辑，例如更新状态显示
             }).catch(error => {
-                // 这里可以添加消息发送失败后的处理逻辑
+                failureCount++;
+                var username = formData.get('username');
+                failedUsers.push(username);
                 console.error('Error:', error);
+            }).finally(() => {
+                sentCount++;
+                var progress = (sentCount / totalMessages) * 100;
+                progressBar.value = progress;
+                progressText.textContent = `正在发送消息... ${sentCount}/${totalMessages}`;
+
+                if (sentCount === totalMessages) {
+                    progressText.textContent = `发送完成！成功: ${successCount}，失败: ${failureCount}`;
+                    if (failedUsers.length > 0) {
+                        alert(`以下用户发送失败: ${failedUsers.join(', ')}`);
+                    }
+                }
             });
         });
-
-        alert('分组消息已发送');
     }
 </script>
 </body>
