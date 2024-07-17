@@ -97,6 +97,7 @@
             <option value="{{ group }}">{{ group }}</option>
             {% endfor %}
         </select>
+        <button type="button" onclick="sendGroupMessage()">一键发送</button> <!-- 新增一键发送按钮 -->
     </div>
     <table>
         <thead>
@@ -124,7 +125,7 @@
                 </form>
             </td>
             <td>
-                <span class="status-message" style="display:none;"></span> <!-- 新增状态信息显示 -->
+                <span class="status-message" style="display:none;"></span>
             </td>
         </tr>
         {% endfor %}
@@ -225,6 +226,45 @@
             alert(error.message);
             console.error('Error:', error);
         });
+    }
+
+    function sendGroupMessage() {
+        var selectedGroup = document.getElementById('groupFilter').value;
+        if (selectedGroup === 'all') {
+            alert('请选择一个分组');
+            return;
+        }
+
+        var rows = document.querySelectorAll(`#messageContainer tr[data-group='${selectedGroup}']`);
+        var serverIp = document.getElementById('server_ip_hidden').value;
+        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        rows.forEach(row => {
+            var form = row.querySelector('form');
+            var formData = new FormData(form);
+            formData.append('server_ip', serverIp);
+
+            fetch('{% url "send_message" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            }).then(data => {
+                // 这里可以添加消息发送成功后的处理逻辑，例如更新状态显示
+            }).catch(error => {
+                // 这里可以添加消息发送失败后的处理逻辑
+                console.error('Error:', error);
+            });
+        });
+
+        alert('分组消息已发送');
     }
 </script>
 </body>
