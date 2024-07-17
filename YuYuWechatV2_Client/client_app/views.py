@@ -31,7 +31,8 @@ def set_server_ip(request):
 
 def home(request):
     messages = Message.objects.all()
-    return render(request, 'home.html', {'messages': messages})
+    groups = Message.objects.values_list('group', flat=True).distinct()  # 获取所有分组
+    return render(request, 'home.html', {'messages': messages, 'groups': groups})
 
 
 @csrf_exempt

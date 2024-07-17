@@ -12,6 +12,8 @@ class WechatUser(models.Model):
 class Message(models.Model):
     user = models.ForeignKey(WechatUser, on_delete=models.CASCADE)
     text = models.TextField()
+    group = models.CharField(max_length=255, blank=True, null=True)  # 新增分组字段
+
 
     def __str__(self):
         return self.user.username

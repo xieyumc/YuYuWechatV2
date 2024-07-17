@@ -55,6 +55,20 @@
             transition: opacity 0.5s ease; /* 平滑过渡效果 */
         }
     </style>
+    <script>
+        function filterMessages() {
+            var selectedGroup = document.getElementById('groupFilter').value;
+            var rows = document.querySelectorAll('#messageContainer tr');
+            rows.forEach(row => {
+                var group = row.getAttribute('data-group');
+                if (selectedGroup === 'all' || group === selectedGroup) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 <div class="sidebar">
@@ -75,20 +89,31 @@
             <button type="button" onclick="updateServerIP()">Set as Server IP</button>
         </form>
     </div>
+    <div>
+        <label for="groupFilter">选择分组:</label>
+        <select id="groupFilter" onchange="filterMessages()">
+            <option value="all">所有分组</option>
+            {% for group in groups %}
+            <option value="{{ group }}">{{ group }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <table>
         <thead>
         <tr>
             <th>用户名</th>
             <th>发送消息</th>
+            <th>分组</th>
             <th>操作</th>
             <th>发送状态</th>
         </tr>
         </thead>
         <tbody id="messageContainer">
         {% for message in messages %}
-        <tr>
+        <tr data-group="{{ message.group }}">
             <td>{{ message.user.username }}</td>
             <td>{{ message.text }}</td>
+            <td>{{ message.group }}</td>
             <td>
                 <form method="post" onsubmit="return sendMessage(this);">
                     {% csrf_token %}
