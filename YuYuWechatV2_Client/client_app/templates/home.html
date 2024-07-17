@@ -31,6 +31,20 @@
             gap: 10px; /* 新增间距 */
         }
 
+        #connectForm .input-container {
+            display: flex;
+            align-items: center;
+        }
+
+        #pingStatus {
+            margin-right: 5px;
+            align-self: center; /* 居中对齐 */
+        }
+
+        #connectForm .input-container input {
+            flex: 1;
+        }
+
         #connectForm input, #connectForm button {
             padding: 10px; /* 增加内边距 */
             margin-bottom: 10px; /* 增加外边距 */
@@ -153,9 +167,11 @@
 <div class="sidebar">
     <form id="connectForm" method="post" action="">
         {% csrf_token %}
+        <div class="input-container">
         <span id="pingStatus"
-              style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 5px;"></span>
-        <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP">
+              style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
+            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP" style="flex: 1;">
+        </div>
         <button type="button" onclick="connectServer()">Ping Server</button>
         <button type="button" onclick="updateServerIP()">Set as Server IP</button>
     </form>
