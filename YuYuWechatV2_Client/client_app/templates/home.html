@@ -86,12 +86,12 @@
         <tbody id="messageContainer">
         {% for message in messages %}
         <tr>
-            <td>{{ message.username }}</td>
+            <td>{{ message.user.username }}</td>
             <td>{{ message.text }}</td>
             <td>
                 <form method="post" onsubmit="return sendMessage(this);">
                     {% csrf_token %}
-                    <input type="hidden" name="username" value="{{ message.username }}">
+                    <input type="hidden" name="username" value="{{ message.user.username }}">
                     <input type="hidden" name="text" value="{{ message.text }}">
                     <input type="hidden" id="server_ip_hidden" name="server_ip">
                     <button type="submit">Send</button>
