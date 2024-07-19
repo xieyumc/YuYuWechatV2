@@ -14,7 +14,7 @@ wechat = WeChat(path="C:/Program Files/Tencent/WeChat/WeChat.exe", locale="zh-CN
 # 创建一个队列
 message_queue = Queue()
 
-# 创建一 文件传输助手个锁
+# 创建一个锁
 lock = threading.Lock()
 
 
