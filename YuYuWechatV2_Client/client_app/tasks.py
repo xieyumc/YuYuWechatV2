@@ -8,8 +8,8 @@ from datetime import datetime, timedelta
 
 @shared_task
 def check_and_send_messages():
-    # 获取当前时间
-    now = timezone.now()
+    # 获取当前时间并转换到默认时区
+    now = timezone.localtime(timezone.now())
 
     # 查询所有还需要执行的消息
     messages = ScheduledMessage.objects.filter(execution_count__gt=0)
@@ -67,6 +67,5 @@ def send_message(data, server_ip):
         url,
         headers={'Content-Type': 'application/json'},
         data=json.dumps(data)
-
     )
     print(response.text)
