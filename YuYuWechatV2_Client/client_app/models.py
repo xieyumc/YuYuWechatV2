@@ -23,3 +23,13 @@ class ServerConfig(models.Model):
 
     def __str__(self):
         return f"Server IP: {self.server_ip}"
+
+class ScheduledMessage(models.Model):
+    user = models.ForeignKey(WechatUser, on_delete=models.CASCADE)
+    text = models.TextField()
+    cron_expression = models.CharField(max_length=255)
+    execution_count = models.IntegerField(default=0)
+    last_executed = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.text[:20]}"
