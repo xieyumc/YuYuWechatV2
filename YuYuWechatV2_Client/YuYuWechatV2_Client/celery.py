@@ -12,6 +12,8 @@ app = Celery('YuYuWechatV2_Client')
 # 从Django的设置文件中加载Celery配置
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
+app.conf.timezone = 'Asia/Shanghai'
+
 # 自动从所有已注册的Django app中加载任务
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
