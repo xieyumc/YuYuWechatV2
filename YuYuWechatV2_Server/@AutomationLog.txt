@@ -1,1 +1,6 @@
 2024-07-17 01:40:35.721 ui_auto_wechat.py[29] click -> Find Control Timeout(10s): {Depth: 8, Name: '搜索', ControlType: EditControl}
+2024-07-19 22:32:00.550 ui_auto_wechat.py[29] click -> Find Control Timeout(10s): {Depth: 8, Name: '搜索', ControlType: EditControl}
+2024-07-19 22:35:00.535 ui_auto_wechat.py[29] click -> Find Control Timeout(10s): {Depth: 8, Name: '搜索', ControlType: EditControl}
+2024-07-19 22:38:00.608 ui_auto_wechat.py[29] click -> Find Control Timeout(10s): {Depth: 8, Name: '搜索', ControlType: EditControl}
+2024-07-19 22:41:00.605 ui_auto_wechat.py[29] click -> Find Control Timeout(10s): {Depth: 8, Name: '搜索', ControlType: EditControl}
+2024-07-19 22:44:00.544 ui_auto_wechat.py[29] click -> Find Control Timeout(10s): {Depth: 8, Name: '搜索', ControlType: EditControl}
