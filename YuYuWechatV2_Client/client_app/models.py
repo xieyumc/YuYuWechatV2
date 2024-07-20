@@ -31,10 +31,12 @@ class ServerConfig(models.Model):
 
 
 class ScheduledMessage(models.Model):
+    is_active = models.BooleanField(default=True)
     user = models.ForeignKey(WechatUser, on_delete=models.CASCADE)
     text = models.TextField()
     cron_expression = models.CharField(max_length=255)
     execution_count = models.IntegerField(default=0)
+    execution_skip = models.IntegerField(default=0)
     last_executed = models.DateTimeField(null=True, blank=True)
 
     @property

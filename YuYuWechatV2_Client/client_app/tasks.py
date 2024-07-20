@@ -12,7 +12,7 @@ def check_and_send_messages():
     now = timezone.localtime(timezone.now())
 
     # 查询所有还需要执行的消息
-    messages = ScheduledMessage.objects.filter(execution_count__gt=0)
+    messages = ScheduledMessage.objects.filter(execution_count__gt=0, is_active=True)
 
     # 尝试获取服务器IP
     try:
@@ -27,6 +27,12 @@ def check_and_send_messages():
 
     for message in messages:
         if check_cron(now, message.cron_expression, message.last_executed):
+            # 检查跳过次数
+            if message.execution_skip > 0:
+                message.execution_skip -= 1
+                message.save()
+                continue
+
             # 构建请求数据和发送消息
             data = {
                 'name': message.user.username,

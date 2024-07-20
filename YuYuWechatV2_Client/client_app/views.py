@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from .models import Message, WechatUser, ServerConfig,ScheduledMessage
+from .models import Message, WechatUser, ServerConfig, ScheduledMessage
 import json
 import requests
 from django.views.decorators.csrf import csrf_exempt
@@ -11,8 +11,6 @@ from django.conf import settings
 import subprocess
 from croniter import croniter
 from datetime import datetime, timedelta
-
-
 
 
 def get_server_ip():
@@ -38,32 +36,41 @@ def set_server_ip(request):
     return JsonResponse({'status': "Invalid request method"}, status=405)
 
 
-
-
 def home(request):
     messages = Message.objects.all()
     groups = WechatUser.objects.values_list('group', flat=True).distinct()  # 获取所有分组
     return render(request, 'home.html', {'messages': messages, 'groups': groups})
+
 
 def send_message_management(request):
     messages = Message.objects.all()
     groups = WechatUser.objects.values_list('group', flat=True).distinct()  # 获取所有分组
     return render(request, 'send_message_management.html', {'messages': messages, 'groups': groups})
 
+
 def schedule_management(request):
     tasks = ScheduledMessage.objects.all()
     now = timezone.localtime(timezone.now())
     for task in tasks:
-        # 计算下次执行时间
+        if task.is_active:
+            # 计算下次执行时间
+            base = now
+            iter = croniter(task.cron_expression, base)
 
-        # 从当前时间开始计算
-        base = now - timedelta(minutes=1)
-        iter = croniter(task.cron_expression, base)
-        next_time = iter.get_next(datetime)
+            next_time = iter.get_next(datetime)
+            skip_count = task.execution_skip
 
-        task.next_run = next_time
+            # 跳过指定次数的执行时间
+            while skip_count > 0:
+                next_time = iter.get_next(datetime)
+                skip_count -= 1
+
+            task.next_run = next_time
+        else:
+            task.next_run = "不运行"
+
     groups = WechatUser.objects.values_list('group', flat=True).distinct()  # 获取所有分组
-    return render(request, 'schedule_management.html', {'tasks': tasks,'groups': groups})
+    return render(request, 'schedule_management.html', {'tasks': tasks, 'groups': groups})
 
 @csrf_exempt
 def send_message(request):
@@ -106,6 +113,7 @@ def export_database(request):
             return response
     return render(request, 'export.html')
 
+
 @csrf_exempt
 def import_database(request):
     if request.method == 'POST':
@@ -128,6 +136,7 @@ def start_celery(request):
         return JsonResponse({'status': 'Celery started'}, status=200)
     except Exception as e:
         return JsonResponse({'status': 'Failed to start Celery', 'error': str(e)}, status=500)
+
 
 @csrf_exempt
 def stop_celery(request):
