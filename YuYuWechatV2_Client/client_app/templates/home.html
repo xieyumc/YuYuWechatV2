@@ -25,18 +25,29 @@
             border-right: 1px solid #e0e0e0;
         }
 
-        #connectForm {
+        .main-content {
+            flex: 1;
+            padding: 20px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .card {
             background-color: #ffffff;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             border: 1px solid #e0e0e0;
+            width: calc(50% - 20px);
+            box-sizing: border-box;
         }
 
-        #connectForm .input-container {
+        .card h3 {
+            margin-top: 0;
+        }
+
+        .input-container {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
@@ -47,29 +58,26 @@
             align-self: center;
         }
 
-        #connectForm .input-container input {
+        .input-container input {
             flex: 1;
         }
 
-        #connectForm input, #connectForm button {
+        input, button {
             padding: 10px;
             font-size: 14px;
             border: 1px solid #ddd;
             border-radius: 10px;
         }
 
-        #connectForm button, button[type="submit"], .content button[type="button"], button.skip-button {
+        button {
             background-color: #007aff;
             color: white;
             border: none;
             cursor: pointer;
-            padding: 10px;
-            font-size: 14px;
-            border-radius: 10px;
             transition: background-color 0.3s ease;
         }
 
-        #connectForm button:hover, button[type="submit"]:hover, .content button[type="button"]:hover, button.skip-button:hover {
+        button:hover {
             background-color: #005bb5;
         }
 
@@ -157,24 +165,9 @@
             background-color: #007aff;
         }
     </style>
-    <script>
-        function filterMessages() {
-            var selectedGroup = document.getElementById('groupFilter').value;
-            var rows = document.querySelectorAll('#messageContainer tr');
-            rows.forEach(row => {
-                var group = row.getAttribute('data-group');
-                if (selectedGroup === 'all' || group === selectedGroup) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </head>
 <body>
 <div class="sidebar">
-
     <h2>Menu</h2>
     <ul>
         <li><a href="{% url 'home' %}">Home</a></li>
@@ -184,20 +177,27 @@
 </div>
 <div class="content">
     <div class="topbar">
-        <h1>YuYuWeChat Client</h1>
+        <h1>YuYuWechat</h1>
     </div>
+    <div class="main-content">
+        <div class="card">
+            <h3>连接服务器</h3>
+            <form id="connectForm" method="post" action="">
+                {% csrf_token %}
+                <div class="input-container">
+        <span id="pingStatus"
+              style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
+                    <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP" style="flex: 1;">
+                    <input type="hidden" id="server_ip_hidden" name="server_ip"> <!-- 添加隐藏的 input -->
 
-    <form id="connectForm" method="post" action="">
-        {% csrf_token %}
-        <div class="input-container">
-            <span id="pingStatus"
-                  style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
-            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP" style="flex: 1;">
+                </div>
+                <button type="button" onclick="connectServer()">Ping Server</button>
+                <button type="button" onclick="updateServerIP()">Set as Server IP</button>
+            </form>
         </div>
-        <button type="button" onclick="connectServer()">Ping Server</button>
-        <button type="button" onclick="updateServerIP()">Set as Server IP</button>
-    </form>
 
+        <!-- Add more cards here as needed -->
+    </div>
 </div>
 <script>
     function connectServer() {
