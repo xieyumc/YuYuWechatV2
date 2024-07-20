@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Schedule Management</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -149,9 +149,9 @@
         }
     </style>
     <script>
-        function filterMessages() {
+        function filterTasks() {
             var selectedGroup = document.getElementById('groupFilter').value;
-            var rows = document.querySelectorAll('#messageContainer tr');
+            var rows = document.querySelectorAll('#taskContainer tr');
             rows.forEach(row => {
                 var group = row.getAttribute('data-group');
                 if (selectedGroup === 'all' || group === selectedGroup) {
@@ -185,20 +185,31 @@
     <div class="topbar">
         <h1>定时任务管理</h1>
     </div>
+    <div>
+        <label for="groupFilter">选择分组:</label>
+        <select id="groupFilter" onchange="filterTasks()">
+            <option value="all">所有分组</option>
+            {% for group in groups %}
+                <option value="{{ group }}">{{ group }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <table>
         <thead>
         <tr>
             <th>用户名</th>
             <th>消息内容</th>
+            <th>分组</th>
             <th>上次发送时间</th>
             <th>下次执行时间</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="taskContainer">
         {% for task in tasks %}
-            <tr>
+            <tr data-group="{{ task.group }}">
                 <td>{{ task.user.username }}</td>
                 <td>{{ task.text }}</td>
+                <td>{{ task.group }}</td>
                 <td>{{ task.last_executed }}</td>
                 <td>{{ task.next_run }}</td>
             </tr>
@@ -250,37 +261,6 @@
             });
     }
 
-    function sendMessage(form) {
-        var statusMessage = form.parentNode.nextElementSibling.querySelector('.status-message');
-        statusMessage.style.display = 'block';
-        statusMessage.textContent = '正在发送...';
-        statusMessage.style.opacity = 0;
-        setTimeout(() => statusMessage.style.opacity = 1, 100);
-
-        var formData = new FormData(form);
-        formData.append('server_ip', document.getElementById('server_ip_hidden').value);
-
-        fetch('{% url "send_message" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            }
-        }).then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Network response was not ok.');
-            }
-        }).then(data => {
-            statusMessage.textContent = '发送成功';
-        }).catch(error => {
-            statusMessage.textContent = '发送失败';
-            console.error('Error:', error);
-        });
-        return false;
-    }
-
     function updateServerIP() {
         var serverIp = document.getElementById('server_ip').value;
         fetch('{% url "set_server_ip" %}', {
@@ -289,81 +269,20 @@
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({'server_ip': serverIp})
-        }).then(response => {
-            if (response.ok) {
-                alert('Server IP updated to: ' + serverIp);
-            } else {
-                throw new Error('Failed to update server IP.');
-            }
-        }).catch(error => {
-            alert(error.message);
-            console.error('Error:', error);
-        });
-    }
-
-    function sendGroupMessage() {
-        var selectedGroup = document.getElementById('groupFilter').value;
-        if (selectedGroup === 'all') {
-            alert('请选择一个分组');
-            return;
-        }
-
-        var rows = document.querySelectorAll(`#messageContainer tr[data-group='${selectedGroup}']`);
-        var serverIp = document.getElementById('server_ip_hidden').value;
-        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        var totalMessages = rows.length;
-        var sentCount = 0;
-        var successCount = 0;
-        var failureCount = 0;
-        var failedUsers = [];
-
-        if (totalMessages === 0) {
-            alert('当前分组没有用户');
-            return;
-        }
-
-        document.getElementById('progressContainer').style.display = 'block';
-        var progressBar = document.getElementById('progressBar');
-        var progressText = document.getElementById('progressText');
-
-        rows.forEach(row => {
-            var form = row.querySelector('form');
-            var formData = new FormData(form);
-            formData.append('server_ip', serverIp);
-
-            fetch('{% url "send_message" %}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': csrfToken
-                }
-            }).then(response => {
+            body: JSON.stringify({server_ip: serverIp})
+        })
+            .then(response => {
                 if (response.ok) {
-                    successCount++;
-                    return response.json();
+                    alert('Server IP updated: ' + serverIp);
+                    document.getElementById('server_ip_hidden').value = serverIp;
                 } else {
-                    throw new Error('Network response was not ok.');
+                    throw new Error('Server response was not ok.');
                 }
-            }).catch(error => {
-                failureCount++;
-                var username = formData.get('username');
-                failedUsers.push(username);
+            })
+            .catch(error => {
+                alert('Failed to update server IP: ' + error.message);
                 console.error('Error:', error);
-            }).finally(() => {
-                sentCount++;
-                var progress = (sentCount / totalMessages) * 100;
-                progressBar.value = progress;
-                progressText.textContent = `正在发送消息... ${sentCount}/${totalMessages}`;
-
-                if (sentCount === totalMessages) {
-                    progressText.textContent = `发送完成！成功: ${successCount}，失败: ${failureCount}`;
-                    if (failedUsers.length > 0) {
-                        alert(`以下用户发送失败: ${failedUsers.join(', ')}`);
-                    }
-                }
             });
-        });
     }
 </script>
 </body>

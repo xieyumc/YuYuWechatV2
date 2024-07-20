@@ -52,8 +52,8 @@ def schedule_management(request):
         next_time = iter.get_next(datetime)
 
         task.next_run = next_time
-
-    return render(request, 'schedule_management.html', {'tasks': tasks})
+    groups = WechatUser.objects.values_list('group', flat=True).distinct()  # 获取所有分组
+    return render(request, 'schedule_management.html', {'tasks': tasks,'groups': groups})
 
 @csrf_exempt
 def send_message(request):
