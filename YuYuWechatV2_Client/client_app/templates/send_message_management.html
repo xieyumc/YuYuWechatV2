@@ -29,17 +29,11 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            background-color: #ffffff;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
         }
 
         #connectForm .input-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
         }
 
         #pingStatus {
@@ -53,6 +47,7 @@
 
         #connectForm input, #connectForm button {
             padding: 10px;
+            margin-bottom: 10px;
             font-size: 14px;
             border: 1px solid #ddd;
             border-radius: 10px;
@@ -64,6 +59,7 @@
             border: none;
             cursor: pointer;
             padding: 10px;
+            margin-bottom: 10px;
             font-size: 14px;
             border-radius: 10px;
             transition: background-color 0.3s ease;
@@ -174,7 +170,16 @@
 </head>
 <body>
 <div class="sidebar">
-
+    <form id="connectForm" method="post" action="">
+        {% csrf_token %}
+        <div class="input-container">
+        <span id="pingStatus"
+              style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
+            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP" style="flex: 1;">
+        </div>
+        <button type="button" onclick="connectServer()">Ping Server</button>
+        <button type="button" onclick="updateServerIP()">Set as Server IP</button>
+    </form>
     <h2>Menu</h2>
     <ul>
         <li><a href="{% url 'home' %}">Home</a></li>
@@ -184,20 +189,56 @@
 </div>
 <div class="content">
     <div class="topbar">
-        <h1>YuYuWeChat Client</h1>
+        <h1>发送消息管理</h1>
+
     </div>
-
-    <form id="connectForm" method="post" action="">
-        {% csrf_token %}
-        <div class="input-container">
-            <span id="pingStatus"
-                  style="height: 10px; width: 10px; background-color: gray; border-radius: 50%; display: inline-block; margin-right: 5px;"></span>
-            <input type="text" id="server_ip" name="server_ip" placeholder="Enter Server IP" style="flex: 1;">
-        </div>
-        <button type="button" onclick="connectServer()">Ping Server</button>
-        <button type="button" onclick="updateServerIP()">Set as Server IP</button>
-    </form>
-
+    <div>
+        <label for="groupFilter">选择分组:</label>
+        <select id="groupFilter" onchange="filterMessages()">
+            <option value="all">所有分组</option>
+            {% for group in groups %}
+                <option value="{{ group }}">{{ group }}</option>
+            {% endfor %}
+        </select>
+        <button type="button" onclick="sendGroupMessage()">一键发送</button> <!-- 新增一键发送按钮 -->
+    </div>
+    <div id="progressContainer" style="display: none;">
+        <progress id="progressBar" value="0" max="100"></progress>
+        <p id="progressText">正在发送消息...</p>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>用户名</th>
+            <th>发送消息</th>
+            <th>分组</th>
+            <th>操作</th>
+            <th>发送状态</th>
+        </tr>
+        </thead>
+        <tbody id="messageContainer">
+        {% for message in messages %}
+            <tr data-group="{{ message.group }}">
+                <td>{{ message.user.username }}</td>
+                <td>{{ message.text }}</td>
+                <td>{{ message.group }}</td>
+                <td>
+                    <form method="post" onsubmit="return sendMessage(this);">
+                        {% csrf_token %}
+                        <input type="hidden" name="username" value="{{ message.user.username }}">
+                        <input type="hidden" name="text" value="{{ message.text }}">
+                        <input type="hidden" id="server_ip_hidden" name="server_ip">
+                        <button type="submit">单次发送</button>
+                        <button type="button" class="skip-button" onclick="toggleSkip(this)">本轮发送</button>
+                    </form>
+                </td>
+                <td>
+                    <span class="status-message" style="display:none;"></span>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 <script>
     function connectServer() {

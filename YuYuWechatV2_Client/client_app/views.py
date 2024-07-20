@@ -40,6 +40,11 @@ def home(request):
     groups = WechatUser.objects.values_list('group', flat=True).distinct()  # 获取所有分组
     return render(request, 'home.html', {'messages': messages, 'groups': groups})
 
+def send_message_management(request):
+    messages = Message.objects.all()
+    groups = WechatUser.objects.values_list('group', flat=True).distinct()  # 获取所有分组
+    return render(request, 'send_message_management.html', {'messages': messages, 'groups': groups})
+
 def schedule_management(request):
     tasks = ScheduledMessage.objects.all()
     now = timezone.localtime(timezone.now())
