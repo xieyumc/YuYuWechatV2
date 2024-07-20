@@ -200,6 +200,7 @@
             <th>用户名</th>
             <th>消息内容</th>
             <th>分组</th>
+            <th>Cron表达式</th>
             <th>上次发送时间</th>
             <th>下次执行时间</th>
         </tr>
@@ -210,6 +211,7 @@
                 <td>{{ task.user.username }}</td>
                 <td>{{ task.text }}</td>
                 <td>{{ task.group }}</td>
+                <td>{{ task.cron_expression }}</td>
                 <td>{{ task.last_executed }}</td>
                 <td>{{ task.next_run }}</td>
             </tr>
