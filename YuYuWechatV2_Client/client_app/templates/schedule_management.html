@@ -212,6 +212,14 @@
                 return;
             }
 
+            // 显示进度条
+            var progressContainer = document.getElementById('progressContainer');
+            var progressBar = document.getElementById('progressBar');
+            var progressText = document.getElementById('progressText');
+            progressContainer.style.display = 'block';
+            progressBar.value = 0;
+            progressText.textContent = `正在处理... 0/${totalTasks}`;
+
             rows.forEach(row => {
                 var form = row.querySelector('form');
                 var formData = new FormData(form);
@@ -236,8 +244,12 @@
                     console.error('Error:', error);
                 }).finally(() => {
                     processedCount++;
+                    var progress = (processedCount / totalTasks) * 100;
+                    progressBar.value = progress;
+                    progressText.textContent = `正在处理... ${processedCount}/${totalTasks}`;
+
                     if (processedCount === totalTasks) {
-                        var progressText = `处理完成！成功: ${successCount}，失败: ${failureCount}`;
+                        progressText.textContent = `处理完成！成功: ${successCount}，失败: ${failureCount}`;
                         if (failedUsers.length > 0) {
                             alert(`以下用户处理失败: ${failedUsers.join(', ')}`);
                         }
@@ -269,6 +281,10 @@
             {% endfor %}
         </select>
         <button type="button" onclick="skipGroupExecution()">一键提前发送</button>
+    </div>
+    <div id="progressContainer" style="display: none;">
+        <progress id="progressBar" value="0" max="100"></progress>
+        <p id="progressText">正在处理...</p>
     </div>
     <table>
         <thead>
@@ -307,9 +323,5 @@
         </tbody>
     </table>
 </div>
-
-<script>
-
-</script>
 </body>
 </html>
