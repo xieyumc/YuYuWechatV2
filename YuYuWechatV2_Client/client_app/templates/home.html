@@ -212,6 +212,12 @@
             </form>
         </div>
 
+        <div class="card">
+            <h3>Celery 管理</h3>
+            <button type="button" onclick="startCelery()">启动 Celery</button>
+            <button type="button" onclick="stopCelery()">取消 Celery</button>
+        </div>
+
 
         <!-- Add more cards here as needed -->
     </div>
@@ -284,6 +290,41 @@
         });
     }
 
+    function startCelery() {
+        fetch('{% url "start_celery" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        }).then(response => {
+            if (response.ok) {
+                alert('Celery 已启动');
+            } else {
+                alert('启动 Celery 失败');
+            }
+        }).catch(error => {
+            alert('启动 Celery 失败: ' + error.message);
+            console.error('Error:', error);
+        });
+    }
+
+    function stopCelery() {
+        fetch('{% url "stop_celery" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        }).then(response => {
+            if (response.ok) {
+                alert('Celery 已取消');
+            } else {
+                alert('取消 Celery 失败');
+            }
+        }).catch(error => {
+            alert('取消 Celery 失败: ' + error.message);
+            console.error('Error:', error);
+        });
+    }
 
 </script>
 </body>

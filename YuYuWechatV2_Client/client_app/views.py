@@ -8,7 +8,7 @@ from django.utils import timezone
 import os
 from django.core.management import call_command
 from django.conf import settings
-
+import subprocess
 from croniter import croniter
 from datetime import datetime, timedelta
 
@@ -118,3 +118,21 @@ def import_database(request):
         os.remove(file_path)
         return HttpResponse('Database imported successfully.')
     return render(request, 'import.html')
+
+
+@csrf_exempt
+def start_celery(request):
+    try:
+        subprocess.Popen(['celery', '-A', 'YuYuWechatV2_Client', 'worker', '--loglevel=info'])
+        subprocess.Popen(['celery', '-A', 'YuYuWechatV2_Client', 'beat', '--loglevel=info'])
+        return JsonResponse({'status': 'Celery started'}, status=200)
+    except Exception as e:
+        return JsonResponse({'status': 'Failed to start Celery', 'error': str(e)}, status=500)
+
+@csrf_exempt
+def stop_celery(request):
+    try:
+        subprocess.call(['pkill', '-f', 'celery'])
+        return JsonResponse({'status': 'Celery stopped'}, status=200)
+    except Exception as e:
+        return JsonResponse({'status': 'Failed to stop Celery', 'error': str(e)}, status=500)
