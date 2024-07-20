@@ -199,7 +199,9 @@
         <!-- Add more cards here as needed -->
     </div>
 </div>
+
 <script>
+
     function connectServer() {
         var serverIp = document.getElementById('server_ip').value;
         var pingUrl = `http://${serverIp}/wechat/ping/`; // 构建完整的 URL
@@ -243,46 +245,6 @@
             });
     }
 
-    function toggleSkip(button) {
-        if (button.classList.contains('active')) {
-            button.classList.remove('active');
-            button.textContent = '本轮发送';
-        } else {
-            button.classList.add('active');
-            button.textContent = '本轮不发送';
-        }
-    }
-
-    function sendMessage(form) {
-        var statusMessage = form.parentNode.nextElementSibling.querySelector('.status-message');
-        statusMessage.style.display = 'block';
-        statusMessage.textContent = '正在发送...';
-        statusMessage.style.opacity = 0;
-        setTimeout(() => statusMessage.style.opacity = 1, 100);
-
-        var formData = new FormData(form);
-        formData.append('server_ip', document.getElementById('server_ip_hidden').value);
-
-        fetch('{% url "send_message" %}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            }
-        }).then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Network response was not ok.');
-            }
-        }).then(data => {
-            statusMessage.textContent = '发送成功';
-        }).catch(error => {
-            statusMessage.textContent = '发送失败';
-            console.error('Error:', error);
-        });
-        return false;
-    }
 
     function updateServerIP() {
         var serverIp = document.getElementById('server_ip').value;
@@ -305,81 +267,8 @@
         });
     }
 
-    function sendGroupMessage() {
-        var selectedGroup = document.getElementById('groupFilter').value;
-        if (selectedGroup === 'all') {
-            alert('请选择一个分组');
-            return;
-        }
 
-        var rows = document.querySelectorAll(`#messageContainer tr[data-group='${selectedGroup}']`);
-        var serverIp = document.getElementById('server_ip_hidden').value;
-        var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        var totalMessages = rows.length;
-        var sentCount = 0;
-        var successCount = 0;
-        var failureCount = 0;
-        var failedUsers = [];
 
-        if (totalMessages === 0) {
-            alert('当前分组没有用户');
-            return;
-        }
-
-        document.getElementById('progressContainer').style.display = 'block';
-        var progressBar = document.getElementById('progressBar');
-        var progressText = document.getElementById('progressText');
-
-        rows.forEach(row => {
-            var skipButton = row.querySelector('.skip-button');
-            // 如果设置为“本轮不发送”，则跳过这条消息
-            if (skipButton && skipButton.classList.contains('active')) {
-                sentCount++;  // 还需增加计数，确保进度条能正确更新
-                updateProgress(sentCount, totalMessages, progressBar, progressText, successCount, failureCount, failedUsers);
-                return;
-            }
-
-            var form = row.querySelector('form');
-            var formData = new FormData(form);
-            formData.append('server_ip', serverIp);
-
-            fetch('{% url "send_message" %}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': csrfToken
-                }
-            }).then(response => {
-                if (response.ok) {
-                    successCount++;
-                    return response.json();
-                } else {
-                    throw new Error('Network response was not ok.');
-                }
-            }).catch(error => {
-                failureCount++;
-                var username = formData.get('username');
-                failedUsers.push(username);
-                console.error('Error:', error);
-            }).finally(() => {
-                sentCount++;
-                updateProgress(sentCount, totalMessages, progressBar, progressText, successCount, failureCount, failedUsers);
-            });
-        });
-    }
-
-    function updateProgress(sentCount, totalMessages, progressBar, progressText, successCount, failureCount, failedUsers) {
-        var progress = (sentCount / totalMessages) * 100;
-        progressBar.value = progress;
-        progressText.textContent = `正在发送消息... ${sentCount}/${totalMessages}`;
-
-        if (sentCount === totalMessages) {
-            progressText.textContent = `发送完成！成功: ${successCount}，失败: ${failureCount}`;
-            if (failedUsers.length > 0) {
-                alert(`以下用户发送失败: ${failedUsers.join(', ')}`);
-            }
-        }
-    }
 </script>
 </body>
 </html>
