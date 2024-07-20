@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import home, send_message, set_server_ip, schedule_management, send_message_management, export_database, import_database, start_celery, stop_celery
+from .views import home, send_message, set_server_ip, schedule_management, send_message_management, export_database, \
+    import_database, start_celery, stop_celery, skip_execution
 
 urlpatterns = [
     path('', home, name='home'),
@@ -11,4 +12,6 @@ urlpatterns = [
     path('import_database/', import_database, name='import_database'),
     path('start_celery/', start_celery, name='start_celery'),
     path('stop_celery/', stop_celery, name='stop_celery'),
+    path('skip_execution/', skip_execution, name='skip_execution'),
+
 ]

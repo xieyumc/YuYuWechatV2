@@ -161,16 +161,99 @@
                 }
             });
         }
+
+        function skipExecution(form) {
+            var statusMessage = form.parentNode.nextElementSibling.querySelector('.status-message');
+            statusMessage.style.display = 'block';
+            statusMessage.textContent = '正在处理...';
+            statusMessage.style.opacity = 0;
+            setTimeout(() => statusMessage.style.opacity = 1, 100);
+
+            var formData = new FormData(form);
+
+            fetch('{% url "skip_execution" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            }).then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Network response was not ok.');
+                }
+            }).then(data => {
+                statusMessage.textContent = '处理成功';
+            }).catch(error => {
+                statusMessage.textContent = '处理失败';
+                console.error('Error:', error);
+            });
+            return false;
+        }
+
+        function skipGroupExecution() {
+            var selectedGroup = document.getElementById('groupFilter').value;
+            if (selectedGroup === 'all') {
+                alert('请选择一个分组');
+                return;
+            }
+
+            var rows = document.querySelectorAll(`#taskContainer tr[data-group='${selectedGroup}']`);
+            var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var totalTasks = rows.length;
+            var processedCount = 0;
+            var successCount = 0;
+            var failureCount = 0;
+            var failedUsers = [];
+
+            if (totalTasks === 0) {
+                alert('当前分组没有任务');
+                return;
+            }
+
+            rows.forEach(row => {
+                var form = row.querySelector('form');
+                var formData = new FormData(form);
+
+                fetch('{% url "skip_execution" %}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        successCount++;
+                        return response.json();
+                    } else {
+                        throw new Error('Network response was not ok.');
+                    }
+                }).catch(error => {
+                    failureCount++;
+                    var username = formData.get('username');
+                    failedUsers.push(username);
+                    console.error('Error:', error);
+                }).finally(() => {
+                    processedCount++;
+                    if (processedCount === totalTasks) {
+                        var progressText = `处理完成！成功: ${successCount}，失败: ${failureCount}`;
+                        if (failedUsers.length > 0) {
+                            alert(`以下用户处理失败: ${failedUsers.join(', ')}`);
+                        }
+                    }
+                });
+            });
+        }
     </script>
 </head>
 <body>
 <div class="sidebar">
-
     <h2>Menu</h2>
     <ul>
         <li><a href="{% url 'home' %}">Home</a></li>
-        <li><a href="{% url 'send_message_management' %}">发送消息管理</a></li> <!-- 新增链接 -->
-        <li><a href="{% url 'schedule_management' %}">定时任务管理</a></li> <!-- 新增链接 -->
+        <li><a href="{% url 'send_message_management' %}">发送消息管理</a></li>
+        <li><a href="{% url 'schedule_management' %}">定时任务管理</a></li>
     </ul>
 </div>
 <div class="content">
@@ -185,6 +268,7 @@
                 <option value="{{ group }}">{{ group }}</option>
             {% endfor %}
         </select>
+        <button type="button" onclick="skipGroupExecution()">一键提前发送</button>
     </div>
     <table>
         <thead>
@@ -195,6 +279,8 @@
             <th>Cron表达式</th>
             <th>上次发送时间</th>
             <th>下次执行时间</th>
+            <th>操作</th>
+            <th>发送状态</th>
         </tr>
         </thead>
         <tbody id="taskContainer">
@@ -206,11 +292,22 @@
                 <td>{{ task.cron_expression }}</td>
                 <td>{{ task.last_executed }}</td>
                 <td>{{ task.next_run }}</td>
+                <td>
+                    <form method="post" onsubmit="return skipExecution(this);">
+                        {% csrf_token %}
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <button type="submit">提前发送</button>
+                    </form>
+                </td>
+                <td>
+                    <span class="status-message" style="display:none;"></span>
+                </td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
+
 <script>
 
 </script>

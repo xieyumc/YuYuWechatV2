@@ -73,6 +73,44 @@ def schedule_management(request):
     return render(request, 'schedule_management.html', {'tasks': tasks, 'groups': groups})
 
 @csrf_exempt
+def skip_execution(request):
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        try:
+            task = ScheduledMessage.objects.get(id=task_id)
+            task.execution_skip += 1
+            task.save()
+
+            # 发送消息
+            user = task.user
+            server_ip = get_server_ip()
+
+            if not server_ip:
+                return JsonResponse({'status': "Server IP not set"}, status=400)
+
+            data = {
+                'name': user.username,
+                'text': task.text
+            }
+
+            url = f'http://{server_ip}/wechat/send_message/'
+            response = requests.post(
+                url,
+                headers={'Content-Type': 'application/json'},
+                data=json.dumps(data)
+            )
+
+            if response.ok:
+                return JsonResponse({'status': f"Message sent to {user.username}"})
+            else:
+                return JsonResponse({'status': "Failed to send message"}, status=500)
+
+        except ScheduledMessage.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '任务不存在'}, status=404)
+    return JsonResponse({'status': 'error', 'message': '无效请求'}, status=400)
+
+
+@csrf_exempt
 def send_message(request):
     if request.method == 'POST':
         username = request.POST.get('username')
