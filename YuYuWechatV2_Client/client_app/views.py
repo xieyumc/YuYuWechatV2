@@ -1,9 +1,13 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from .models import Message, WechatUser, ServerConfig
+from .models import Message, WechatUser, ServerConfig,ScheduledMessage
 import json
 import requests
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
+from croniter import croniter
+from datetime import datetime, timedelta
 
 
 def get_server_ip():
@@ -34,6 +38,20 @@ def home(request):
     groups = Message.objects.values_list('group', flat=True).distinct()  # 获取所有分组
     return render(request, 'home.html', {'messages': messages, 'groups': groups})
 
+def schedule_management(request):
+    tasks = ScheduledMessage.objects.all()
+    now = timezone.localtime(timezone.now())
+    for task in tasks:
+        # 计算下次执行时间
+
+        # 从当前时间开始计算
+        base = now - timedelta(minutes=1)
+        iter = croniter(task.cron_expression, base)
+        next_time = iter.get_next(datetime)
+
+        task.next_run = next_time
+
+    return render(request, 'schedule_management.html', {'tasks': tasks})
 
 @csrf_exempt
 def send_message(request):
