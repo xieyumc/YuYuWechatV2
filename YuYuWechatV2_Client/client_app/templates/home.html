@@ -195,6 +195,23 @@
                 <button type="button" onclick="updateServerIP()">Set as Server IP</button>
             </form>
         </div>
+        <div class="card">
+            <h3>导出数据库</h3>
+            <form method="post" action="{% url 'export_database' %}">
+                {% csrf_token %}
+                <button type="submit">导出数据库</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>导入数据库</h3>
+            <form method="post" action="{% url 'import_database' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="db_file" required>
+                <button type="submit">导入数据库</button>
+            </form>
+        </div>
+
 
         <!-- Add more cards here as needed -->
     </div>
@@ -266,7 +283,6 @@
             console.error('Error:', error);
         });
     }
-
 
 
 </script>

@@ -5,9 +5,14 @@ import json
 import requests
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+import os
+from django.core.management import call_command
+from django.conf import settings
 
 from croniter import croniter
 from datetime import datetime, timedelta
+
+
 
 
 def get_server_ip():
@@ -88,3 +93,28 @@ def send_message(request):
         )
         return JsonResponse({'status': f"Message sent to {username}"})
     return JsonResponse({'status': "Invalid request method"}, status=405)
+
+
+def export_database(request):
+    if request.method == 'POST':
+        file_path = os.path.join(settings.BASE_DIR, 'db_backup.json')
+        with open(file_path, 'w') as f:
+            call_command('dumpdata', 'client_app', stdout=f)  # 只导出 client_app 应用的数据
+        with open(file_path, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='application/json')
+            response['Content-Disposition'] = 'attachment; filename=db_backup.json'
+            return response
+    return render(request, 'export.html')
+
+@csrf_exempt
+def import_database(request):
+    if request.method == 'POST':
+        file = request.FILES['db_file']
+        file_path = os.path.join(settings.BASE_DIR, 'temp_db.json')
+        with open(file_path, 'wb+') as destination:
+            for chunk in file.chunks():
+                destination.write(chunk)
+        call_command('loaddata', file_path)
+        os.remove(file_path)
+        return HttpResponse('Database imported successfully.')
+    return render(request, 'import.html')
