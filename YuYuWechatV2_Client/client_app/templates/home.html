@@ -147,6 +147,16 @@
             width: auto; /* 合理大小 */
             padding: 5px 10px; /* 调整内边距 */
         }
+
+        button.skip-button {
+            background-color: #ccc;
+            color: white;
+            cursor: pointer;
+        }
+
+        button.skip-button.active {
+            background-color: #007aff;
+        }
     </style>
     <script>
         function filterMessages() {
@@ -223,6 +233,7 @@
                         <input type="hidden" name="text" value="{{ message.text }}">
                         <input type="hidden" id="server_ip_hidden" name="server_ip">
                         <button type="submit">Send</button>
+                        <button type="button" class="skip-button" onclick="toggleSkip(this)">本轮发送</button>
                     </form>
                 </td>
                 <td>
@@ -275,6 +286,16 @@
                 alert(error.message);
                 console.error('Error:', error);
             });
+    }
+
+    function toggleSkip(button) {
+        if (button.classList.contains('active')) {
+            button.classList.remove('active');
+            button.textContent = '本轮发送';
+        } else {
+            button.classList.add('active');
+            button.textContent = '本轮不发送';
+        }
     }
 
     function sendMessage(form) {
@@ -355,6 +376,14 @@
         var progressText = document.getElementById('progressText');
 
         rows.forEach(row => {
+            var skipButton = row.querySelector('.skip-button');
+            // 如果设置为“本轮不发送”，则跳过这条消息
+            if (skipButton && skipButton.classList.contains('active')) {
+                sentCount++;  // 还需增加计数，确保进度条能正确更新
+                updateProgress(sentCount, totalMessages, progressBar, progressText, successCount, failureCount, failedUsers);
+                return;
+            }
+
             var form = row.querySelector('form');
             var formData = new FormData(form);
             formData.append('server_ip', serverIp);
@@ -379,18 +408,22 @@
                 console.error('Error:', error);
             }).finally(() => {
                 sentCount++;
-                var progress = (sentCount / totalMessages) * 100;
-                progressBar.value = progress;
-                progressText.textContent = `正在发送消息... ${sentCount}/${totalMessages}`;
-
-                if (sentCount === totalMessages) {
-                    progressText.textContent = `发送完成！成功: ${successCount}，失败: ${failureCount}`;
-                    if (failedUsers.length > 0) {
-                        alert(`以下用户发送失败: ${failedUsers.join(', ')}`);
-                    }
-                }
+                updateProgress(sentCount, totalMessages, progressBar, progressText, successCount, failureCount, failedUsers);
             });
         });
+    }
+
+    function updateProgress(sentCount, totalMessages, progressBar, progressText, successCount, failureCount, failedUsers) {
+        var progress = (sentCount / totalMessages) * 100;
+        progressBar.value = progress;
+        progressText.textContent = `正在发送消息... ${sentCount}/${totalMessages}`;
+
+        if (sentCount === totalMessages) {
+            progressText.textContent = `发送完成！成功: ${successCount}，失败: ${failureCount}`;
+            if (failedUsers.length > 0) {
+                alert(`以下用户发送失败: ${failedUsers.join(', ')}`);
+            }
+        }
     }
 </script>
 </body>
