@@ -67,7 +67,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: yuyuwechatv2_client.tar.gz
+        asset_path: /home/runner/work/YuYuWechatV2/YuYuWechatV2/YuYuWechatV2_Client/yuyuwechatv2_client.tar.gz
         asset_name: yuyuwechatv2_client.tar.gz
         asset_content_type: application/gzip
 
