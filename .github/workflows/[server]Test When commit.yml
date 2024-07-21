@@ -23,5 +23,5 @@ jobs:
     - name: Start server
       run: |
         python manage.py runserver 0.0.0.0:8000 &
-        sleep 10  # 运行60秒后停止
-        kill $!
+        sleep 10 
+        curl http://localhost:8000/wechat/ping
