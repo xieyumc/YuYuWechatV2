@@ -1,4 +1,4 @@
-name: Build and Test Docker
+name: Client_Docker Test When commit.yml
 
 on:
   push:
@@ -24,13 +24,13 @@ jobs:
       run: docker build -t my-python-app .
 
     - name: Run Docker container
-      run: docker run -d -p 7000:7000 my-python-app
+      run: docker run -d -p 7000:7000 --name my-python-app-container my-python-app
 
     - name: Wait for the server to start
       run: sleep 10
 
     - name: Display Docker logs
-      run: docker logs ${{ steps.container_id.outputs.container_id }}
+      run: docker logs my-python-app-container
 
     - name: Test main endpoint
       run: curl --fail http://127.0.0.1:7000

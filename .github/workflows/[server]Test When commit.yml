@@ -1,4 +1,4 @@
-name: server Test When commit
+name: server_Test When commit.yml
 
 on:
   push:
