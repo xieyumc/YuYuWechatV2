@@ -21,16 +21,16 @@ jobs:
         driver-opts: image=moby/buildkit:buildx-stable-1
 
     - name: Build Docker image
-      run: docker build -t my-python-app .
+      run: docker build -t yuyuwechatv2_client .
 
     - name: Run Docker container
-      run: docker run -d -p 7000:7000 --name my-python-app-container my-python-app
+      run: docker run -d -p 7000:7000 --name yuyuwechatv2_client-container yuyuwechatv2_client
 
     - name: Wait for the server to start
       run: sleep 10
 
     - name: Display Docker logs
-      run: docker logs my-python-app-container
+      run: docker logs yuyuwechatv2_client-container
 
     - name: Test main endpoint
       run: curl --fail http://127.0.0.1:7000
@@ -45,7 +45,16 @@ jobs:
       run: curl --fail http://127.0.0.1:7000/schedule_management/
 
     - name: Stop and remove Docker container
-      run: docker rm -f my-python-app-container
+      run: docker rm -f yuyuwechatv2_client-container
+
+    - name: Save Docker image to file
+      run: docker save yuyuwechatv2_client | gzip > yuyuwechatv2_client.tar.gz
+
+    - name: Upload Docker image as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: yuyuwechatv2_client
+        path: yuyuwechatv2_client.tar.gz
 
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
@@ -62,3 +71,21 @@ jobs:
           ${{ secrets.DOCKER_USERNAME }}/yuyuwechatv2_client:latest
           ${{ secrets.DOCKER_USERNAME }}/yuyuwechatv2_client:${{ github.ref_name }}
         platforms: linux/amd64,linux/arm64
+
+  upload-release-asset:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: yuyuwechatv2_client
+        path: .
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./yuyuwechatv2_client.tar.gz
+        asset_name: yuyuwechatv2_client.tar.gz
+        asset_content_type: application/gzip
