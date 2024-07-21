@@ -47,8 +47,14 @@ jobs:
     - name: Stop and remove Docker container
       run: docker rm -f yuyuwechatv2_client-container
 
-    - name: Save Docker image to file
-      run: docker save yuyuwechatv2_client | gzip > yuyuwechatv2_client.tar.gz
+    - name: Save Docker image to tar file
+      run: docker save yuyuwechatv2_client -o yuyuwechatv2_client.tar
+
+    - name: Compress Docker image tar file
+      run: gzip yuyuwechatv2_client.tar
+
+    - name: Check generated files
+      run: ls -lh
 
     - name: Upload Docker image as artifact
       uses: actions/upload-artifact@v3
