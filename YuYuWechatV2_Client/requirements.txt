@@ -1,0 +1,7 @@
+django
+celery
+requests
+croniter
+sqlalchemy
+cryptography
+redis
