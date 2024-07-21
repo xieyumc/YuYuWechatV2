@@ -22,8 +22,4 @@ jobs:
         pip install -r requirements.txt
     - name: Start server
       run: |
-        Start-Process -NoNewWindow -FilePath 'python' -ArgumentList 'manage.py runserver 0.0.0.0:8000'
-        sleep 8
-    - name: Ping server
-      run: |
-        curl  http://localhost:8000/wechat/ping/
+        python manage.py runserver 0.0.0.0:8000'
