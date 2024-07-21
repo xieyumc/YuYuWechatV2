@@ -24,8 +24,21 @@ jobs:
         run: |
           pip install pyinstaller
           pyinstaller YuYuWechatV2_Server.spec
-
+      - name: Run bat file and test
+        run: |
+          D:\a\YuYuWechatV2\YuYuWechatV2\YuYuWechatV2_Server\dist\YuYuWechatV2_Server_run.bat
+          sleep 10  # 等待服务器启动
+          response=$(curl -s http://127.0.0.1:8000/wechat/ping/)
+          echo "Response: $response"
+          if [[ "$response" == *"\"status\": \"pong\""* ]]; then
+            echo "Test passed"
+            touch test_successful
+          else
+            echo "Test failed"
+            exit 1
+          fi
       - name: Upload release exe
+        if: success() && steps.test_successful.outputs.test_passed == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -34,8 +47,8 @@ jobs:
           asset_path: D:\a\YuYuWechatV2\YuYuWechatV2\YuYuWechatV2_Server\dist\YuYuWechatV2_Server.exe
           asset_name: YuYuWechatV2_Server.exe
           asset_content_type: application/octet-stream
-
       - name: Upload release bat
+        if: success() && steps.test_successful.outputs.test_passed == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
