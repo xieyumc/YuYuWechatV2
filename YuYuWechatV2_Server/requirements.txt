@@ -15,7 +15,7 @@ pypiwin32
 PyQt5
 PyQt5-Qt5
 PyQt5-sip
-PySide2
+PySide
 pywin32
 pywin32-ctypes
 shiboken2
