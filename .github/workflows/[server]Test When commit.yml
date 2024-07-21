@@ -22,7 +22,7 @@ jobs:
         pip install -r requirements.txt
     - name: Start server
       run: |
-        python manage.py runserver 127.0.0.1:8000 --noreload
+        Start-Process -NoNewWindow -FilePath 'python' -ArgumentList 'manage.py runserver 127.0.0.1:8000'
         sleep 8
     - name: Ping server
       run: |
