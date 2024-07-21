@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 7000
 
 # 启动Django应用
-CMD ["python", "manage.py", "runserver", "127.0.0.1:7000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:7000"]
