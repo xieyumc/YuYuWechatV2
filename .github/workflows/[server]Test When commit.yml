@@ -23,7 +23,7 @@ jobs:
     - name: Start server
       shell: pwsh
       run: |
-        Start-Process -FilePath "python" -ArgumentList "manage.py runserver 0.0.0.0:8000 --noreload" -NoNewWindow
+        Start-Process -FilePath "python" -ArgumentList "manage.py runserver 0.0.0.0:8000 --noreload" 
         Start-Sleep -Seconds 20
     - name: Test server
       run: |
