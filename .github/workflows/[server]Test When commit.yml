@@ -26,4 +26,4 @@ jobs:
         sleep 8
     - name: Ping server
       run: |
-        curl -v http://localhost:8000/wechat/ping/
+        curl -v http://127.0.0.1:8000/wechat/ping/
