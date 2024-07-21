@@ -53,8 +53,13 @@ jobs:
     - name: Compress Docker image tar file
       run: gzip yuyuwechatv2_client.tar
 
-    - name: Check generated files
-      run: ls -lh
+    - name: Modify permissions of the compressed file
+      run: chmod 777 yuyuwechatv2_client.tar.gz
+
+    - name: Check generated files and permissions
+      run: |
+        ls -lh
+        ls -lh yuyuwechatv2_client.tar.gz
 
     - name: Upload Docker image as artifact
       uses: actions/upload-artifact@v3
