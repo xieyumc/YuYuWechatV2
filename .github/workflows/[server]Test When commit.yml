@@ -1,0 +1,27 @@
+name: [server]Test When commit
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./YuYuWechatV2_Server
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Start server
+      run: |
+        python manage.py runserver 0.0.0.0:8000 &
+        sleep 10 # Give server some time to start
+    - name: Ping server
+      run: |
+        curl -s http://localhost:8000/wechat/ping/ | jq '.status' | grep "pong"
