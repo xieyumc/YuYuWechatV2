@@ -1,0 +1,1 @@
+[![codecov](https://codecov.io/github/xieyumc/YuYuWechatV2/graph/badge.svg?token=X9B7H5CHQE)](https://codecov.io/github/xieyumc/YuYuWechatV2)
