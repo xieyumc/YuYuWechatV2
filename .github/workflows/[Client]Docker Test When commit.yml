@@ -29,6 +29,9 @@ jobs:
     - name: Wait for the server to start
       run: sleep 10
 
+    - name: Display Docker logs
+      run: docker logs ${{ steps.container_id.outputs.container_id }}
+
     - name: Test main endpoint
       run: curl --fail http://127.0.0.1:7000
 
