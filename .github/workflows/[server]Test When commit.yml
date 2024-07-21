@@ -1,6 +1,8 @@
-name: [server]Test When commit
+name: server Test When commit
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   build:
