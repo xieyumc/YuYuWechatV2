@@ -65,7 +65,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: yuyuwechatv2_client
-        path: /home/runner/work/YuYuWechatV2/YuYuWechatV2/YuYuWechatV2_Client/yuyuwechatv2_client.tar.gz
+        path: ./yuyuwechatv2_client.tar.gz
 
     - name: Download artifact
       uses: actions/download-artifact@v3
