@@ -5,3 +5,4 @@ croniter
 sqlalchemy
 cryptography
 redis
+coverage
