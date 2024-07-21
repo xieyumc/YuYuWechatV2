@@ -31,7 +31,7 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        context: .
+        context: ./YuYuWechatV2_Client
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/yuyuwechatv2_client:latest
         platforms: linux/amd64,linux/arm64
