@@ -58,7 +58,6 @@ jobs:
 
     - name: Check generated files and permissions
       run: |
-        pwd
         ls -lh
         ls -lh yuyuwechatv2_client.tar.gz
 
@@ -66,7 +65,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: yuyuwechatv2_client
-        path: /home/runner/work/YuYuWechatV2/YuYuWechatV2/YuYuWechatV2_Client/yuyuwechatv2_client.tar.gz
+        path: yuyuwechatv2_client.tar.gz
 
     - name: Download artifact
       uses: actions/download-artifact@v3
@@ -75,6 +74,8 @@ jobs:
 
     - name: Upload release asset
       uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
         asset_path: yuyuwechatv2_client.tar.gz
