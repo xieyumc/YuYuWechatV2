@@ -58,6 +58,7 @@ jobs:
 
     - name: Check generated files and permissions
       run: |
+        pwd
         ls -lh
         ls -lh yuyuwechatv2_client.tar.gz
 
