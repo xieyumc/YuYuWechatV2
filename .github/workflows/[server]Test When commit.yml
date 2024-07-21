@@ -24,7 +24,7 @@ jobs:
       shell: pwsh
       run: |
         Start-Process -FilePath "python" -ArgumentList "manage.py runserver 0.0.0.0:8000" -NoNewWindow
-        Start-Sleep -Seconds 10
+        Start-Sleep -Seconds 20
     - name: Test server
       run: |
         curl http://127.0.0.1:8000/wechat/ping
