@@ -2,6 +2,9 @@
 
 一个让微信批量发送消息，定时自动发送消息的小工具🚀
 
+本仓库只是为了临时重构用的，主仓库请访问：
+https://github.com/xieyumc/YuYuWechat
+
 ![img.png](img/img.png)
 <h6 align="center">首页管理界面
 
