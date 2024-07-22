@@ -30,7 +30,8 @@
 
 ## YuYuWechatV2_Server服务端
 
-![img_4.png](img/img_4.png)
+![img_4.png](img/img_4.png)  
+
 服务端是一个轻量的服务器，和微信一起安装在win上，接受客户端的网络请求并对微信进行自动化操作
 
 ### 服务端接受两个请求：
