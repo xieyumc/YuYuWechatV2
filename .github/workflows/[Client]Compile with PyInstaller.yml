@@ -25,7 +25,6 @@ jobs:
           pip install pyinstaller
           pyinstaller YuYuWechatV2_Client.spec
       - name: Upload release exe
-        if: env.test_passed == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -35,7 +34,6 @@ jobs:
           asset_name: YuYuWechatV2_Client.exe
           asset_content_type: application/octet-stream
       - name: Upload release bat
-        if: env.test_passed == 'true'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
