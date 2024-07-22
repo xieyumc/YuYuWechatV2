@@ -176,10 +176,9 @@ def start_celery(request):
         return JsonResponse({'status': 'Failed to start Celery', 'error': str(e)}, status=500)
 
 
-@csrf_exempt
 def stop_celery(request):
     try:
-        subprocess.call(['celery', '-A', 'YuYuWechatV2_Client', 'control', 'shutdown'])
+        subprocess.call(['pkill', '-f', 'celery'])
         return JsonResponse({'status': 'Celery stopped'}, status=200)
     except Exception as e:
         return JsonResponse({'status': 'Failed to stop Celery', 'error': str(e)}, status=500)
