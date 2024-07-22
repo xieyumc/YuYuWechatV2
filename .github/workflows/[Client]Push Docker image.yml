@@ -71,6 +71,17 @@ jobs:
         asset_name: yuyuwechatv2_client.tar.gz
         asset_content_type: application/gzip
 
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: /home/runner/work/YuYuWechatV2/YuYuWechatV2/YuYuWechatV2_Client/docker-compose.yml
+        asset_name: docker-compose.yml
+        asset_content_type: application/yaml
+
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
