@@ -24,7 +24,7 @@ jobs:
       run: docker build -t my-python-app .
 
     - name: Run Docker container
-      run: docker run -d -p 7000:7000 --name my-python-app-container my-python-app
+      run: docker run -d -p 7500:7500 --name my-python-app-container my-python-app
 
     - name: Wait for the server to start
       run: sleep 10
@@ -33,13 +33,13 @@ jobs:
       run: docker logs my-python-app-container
 
     - name: Test main endpoint
-      run: curl --fail http://127.0.0.1:7000
+      run: curl --fail http://127.0.0.1:7500
 
     - name: Test admin endpoint
-      run: curl --fail http://127.0.0.1:7000/admin
+      run: curl --fail http://127.0.0.1:7500/admin
 
     - name: Test send_message_management endpoint
-      run: curl --fail http://127.0.0.1:7000/send_message_management/
+      run: curl --fail http://127.0.0.1:7500/send_message_management/
 
     - name: Test schedule_management endpoint
-      run: curl --fail http://127.0.0.1:7000/schedule_management/
+      run: curl --fail http://127.0.0.1:7500/schedule_management/
